@@ -1,58 +1,58 @@
 
-# Welcome to your CDK Python project!
+# CDK-Jitsi
 
-This is a blank project for Python development with CDK.
+## What is Jitsi?
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Jitsi is a set of open-source projects that allows you to easily build and deploy secure video conferencing solutions. At the heart of Jitsi are Jitsi Videobridge and Jitsi Meet, which let you have conferences on the internet, while other projects in the community enable other features such as audio, dial-in, recording, and simulcasting.
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+https://jitsi.org/
 
-To manually create a virtualenv on MacOS and Linux:
+## What is CDK-Jitsi?
 
-```
-$ python3 -m venv .venv
-```
+CDK-Jitsi is a quick way to deploy your own Jitsi server in AWS.  You can use this as a replacement for Zoom, Microsoft Teams, etc.
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+The default options will create a short lived jitsi server that you can just delete when you're done with it.  Alternatively, if you set the long-lived option, it will create one that you can power down when you don't need it, and just turn it back on when you do.
 
-```
-$ source .venv/bin/activate
-```
+## CDK-Jitsi creates
 
-If you are a Windows platform, you would activate the virtualenv like this:
+- An EC2 instance inside your default VPC
+  - Latest Ubuntu AMI
+  - apt upgrade done during creation
+  - jitsi-videobridge2 installed and set to run on boot
+  - TLS Certificate generated via letsencrypt for the FQDN specified during setup.
+- Role policies for the EC2 server
+- DNS A Record in AWS Route53 that points to the public IP of the instance
+- Optionally, if choosing long-lived:
+  - A Python script to update DNS on boot
+  - Additional role policies to allow script to function.
 
-```
-% .venv\Scripts\activate.bat
-```
+## Requirements
 
-Once the virtualenv is activated, you can install the required dependencies.
+- An AWS Account.
+- IAM Access keys set up to use the AWS account
+- Something with the AWS CLI, and CDK 2.4 or newer (cloud9 would probably work)
 
-```
-$ pip install -r requirements.txt
-```
+## Environment Variables
 
-At this point you can now synthesize the CloudFormation template for this code.
+The following must be defined for your installation...
 
-```
-$ cdk synth
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
-
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+- CDK_DEFAULT_ACCOUNT
+  - your AWS account number, example: 123456789012
+- CDK_DEFAULT_REGION
+  - the region you wish to install Jitsi into, example: us-west-2
+- JITSI_EMAIL
+  - email address to be used for letsencrypt.  Certificate notifications will be sent there.
+- JITSI_ZONENAME
+  - the name of the DNS zone in AWS Route53 that we will be putting an A record into.
+- JITSI_HOSTNAME
+  - the hostname of the server, combines with ZONENAME to be the FQDN.
+  - default: meet
+- JITSI_INSTANCETYPE
+  - What type of EC2 instance to deploy Jitsi on.
+  - default: t3a.small
+- JITSI_LONGLIVED
+  - Sets up additional things like:
+    - Terminal access via EC2 instance connect
+    - Python script to update DNS record on boot
+    - Role permissions to allow server to update Route53 records
+  - default: false
