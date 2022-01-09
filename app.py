@@ -5,9 +5,10 @@ import aws_cdk as cdk
 
 from jitsi.jitsi_stack import JitsiStack
 
-
 app = cdk.App()
-JitsiStack(app, "JitsiStack",
+my_env = cdk.Environment(account=os.environ["CDK_DEFAULT_ACCOUNT"],
+                         region=os.environ["CDK_DEFAULT_REGION"])
+JitsiStack(app, "JitsiStack", env=my_env
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
